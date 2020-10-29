@@ -7,9 +7,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from lanenet.model.loss import DiscriminativeLoss
-from lanenet.model.encoders import VGGEncoder
-from lanenet.model.decoders import FCNDecoder
+from .loss import DiscriminativeLoss
+from .encoders import VGGEncoder
+from .decoders import FCNDecoder
 
 DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 

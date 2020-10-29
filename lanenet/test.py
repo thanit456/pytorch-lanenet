@@ -7,8 +7,8 @@ from torch.autograd import Variable
 import numpy as np
 import cv2
 
-from lanenet.model.model import compute_loss
-from lanenet.utils.average_meter import AverageMeter
+from model.model import compute_loss
+from utils.average_meter import AverageMeter
 
 DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 

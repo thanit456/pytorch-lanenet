@@ -5,17 +5,17 @@ import sys
 from tqdm import tqdm
 
 import torch
-from lanenet.dataloader.data_loaders import LaneDataSet
-from lanenet.dataloader.transformers import Rescale
-from lanenet.model.model import LaneNet, compute_loss
+from dataloader.data_loaders import LaneDataSet
+from dataloader.transformers import Rescale
+from model.model import LaneNet, compute_loss
 from torch.utils.data import DataLoader
 from torch.autograd import Variable
 
 from torchvision import transforms
 
-from lanenet.utils.cli_helper import parse_args
-from lanenet.utils.average_meter import AverageMeter
-from lanenet.test import test
+from utils.cli_helper import parse_args
+from utils.average_meter import AverageMeter
+from test import test
 
 import numpy as np
 import cv2
@@ -133,7 +133,7 @@ def main():
         val_dataset = LaneDataSet(val_dataset_file, transform=transforms.Compose([Rescale((512, 256))]))
         val_loader = DataLoader(val_dataset, batch_size=args.bs, shuffle=True)
 
-    model = LaneNet()
+    model = LaneNet(args.arch)
     model.to(DEVICE)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
