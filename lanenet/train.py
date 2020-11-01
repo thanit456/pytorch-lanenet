@@ -57,6 +57,7 @@ def train(train_loader, model, optimizer, epoch):
 
     for batch_idx, batch in t:
         step += 1
+        print('batch[0] shape : ', batch[0].shape)
         image_data = Variable(batch[0]).type(torch.FloatTensor).to(DEVICE)
         binary_label = Variable(batch[1]).type(torch.LongTensor).to(DEVICE)
         instance_label = Variable(batch[2]).type(torch.FloatTensor).to(DEVICE)
@@ -133,7 +134,7 @@ def main():
         val_dataset = LaneDataSet(val_dataset_file, transform=transforms.Compose([Rescale((512, 256))]))
         val_loader = DataLoader(val_dataset, batch_size=args.bs, shuffle=True)
 
-    model = LaneNet(args.arch)
+    model = LaneNet()
     model.to(DEVICE)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)

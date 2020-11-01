@@ -5,7 +5,7 @@ import sys
 from tqdm import tqdm
 
 import torch
-from dataloader.data_loaders import LaneDataSet
+from dataloader.data_loaders import LaneDataSet, UnlabelledDataSet
 from dataloader.transformers import Rescale
 from model.model import LaneNet, compute_loss
 from torch.utils.data import DataLoader
@@ -67,23 +67,45 @@ def main():
     # train_loader = DataLoader(train_dataset, batch_size=args.bs, shuffle=True)
 
     if args.val:
-        val_dataset = LaneDataSet(val_dataset_file, transform=transforms.Compose([Rescale((512, 256))]))
+        val_dataset = UnlabelledDataSet(val_dataset_file, transform=transforms.Compose([Rescale((512, 256))]))
         val_loader = DataLoader(val_dataset, batch_size=args.bs, shuffle=True)
 
-    model = LaneNet()
-    model.to(DEVICE)
-    model.load_state_dict(torch.load(args.pretrained))
+    # model = LaneNet()
+    model = torch.load(args.pretrained)
+    model = model.to(DEVICE)
     model.eval()
 
+    print(model)
     for batch_idx, input_data in enumerate(val_loader):
-        image_data = Variable(input_data["input_tensor"]).to(DEVICE)
-        # instance_label = Variable(input_data["instance_label"]).to(DEVICE)
-        # binary_label = Variable(input_data["binary_label"]).to(DEVICE)
-        
+        print(input_data[0].shape)
+        img = np.transpose(input_data[0].numpy(), (1, 2, 0))    
+        image_data = Variable(input_data[0]).type(torch.FloatTensor).to(DEVICE)
+        image_data = image_data.unsqueeze(0)
         net_output = model(image_data)
-        print(net_output.shape)
-        plt.imshow(net_output)
+        instance_seg_logits = net_output['instance_seg_logits'].squeeze()
+        instance_seg_pred = np.argmax(instance_seg_logits.cpu().detach().numpy(), axis=0)
+        instance_seg_pred = instance_seg_pred.squeeze().astype(np.uint8)
+
+        binary_seg_logits = net_output['binary_seg_logits'].squeeze()
+        binary_seg_pred = np.argmax(binary_seg_logits.cpu().detach().numpy(), axis=0)
+        binary_seg_pred = binary_seg_pred.squeeze().astype(np.uint8)
+        # binary_seg_pred = net_output['binary_seg_pred'].squeeze().cpu().numpy()
+
+        plt.subplot(131)
+        orig_img = image_data.squeeze().cpu().numpy()
+        plt.imshow(np.transpose(orig_img.astype(np.uint8), (1, 2, 0)))
+        plt.title('original')
+
+        plt.subplot(132)
+        plt.imshow(binary_seg_pred, 'gray')
+        plt.title('binary')
+
+        plt.subplot(133)
+        plt.imshow(instance_seg_pred, 'gray')
+        plt.title('instance')
         plt.show()
+
+
 
 
     # for epoch in range(0, args.epochs):

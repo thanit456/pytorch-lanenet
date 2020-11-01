@@ -7,11 +7,41 @@ from torch.utils.data import Dataset, DataLoader
 from PIL import Image
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
 
 from torchvision.transforms import ToTensor
 from torchvision import datasets, transforms
 
 import random
+
+
+class UnlabelledDataSet(Dataset):
+    def __init__(self, dataset, transform=None):
+        self._gt_img_list = []
+        self.transform = transform
+
+        with open(dataset, 'r') as file:
+            for _info in file:
+                info_tmp = _info.strip(' ').split()
+
+                self._gt_img_list.append(info_tmp[0])
+
+    def __len__(self):
+        return len(self._gt_img_list)
+
+    def __getitem__(self, idx):
+        # load all
+        img = cv2.imread(self._gt_img_list[idx], cv2.IMREAD_COLOR)
+
+        # optional transformations
+        if self.transform:
+            img = self.transform(img)
+
+        # reshape for pytorch
+        # tensorflow: [height, width, channels]
+        # pytorch: [channels, height, width]
+        img = np.transpose(img, (2, 0, 1))
+        return img 
 
 
 class LaneDataSet(Dataset):
